@@ -3,6 +3,10 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Inicializar el estado de la sesión para almacenar los datos de cada segundo
+if 'historical_data' not in st.session_state:
+    st.session_state['historical_data'] = []
+
 # Función para simular el proceso
 def simulate_process(machine_speeds, lot_size, setup_time, demand, time_limit):
     num_machines = len(machine_speeds)
@@ -16,7 +20,22 @@ def simulate_process(machine_speeds, lot_size, setup_time, demand, time_limit):
     fail_time_total = 0
     start_time = time.time()
 
-    while processed_units < demand and (time.time() - start_time) < time_limit:
+    # Variable para rastrear el tiempo transcurrido en la simulación
+    elapsed_time = 0
+
+    while processed_units < demand and elapsed_time < time_limit:
+        # Actualizar inventarios y tiempos en cada segundo
+        elapsed_time = time.time() - start_time
+        st.session_state['historical_data'].append({
+            'elapsed_time': elapsed_time,
+            'inventories': inventories.copy(),
+            'operation_times': operation_times.copy(),
+            'wait_times': wait_times.copy(),
+            'fail_times': fail_times.copy(),
+            'setup_time_total': setup_time_total,
+            'fail_time_total': fail_time_total
+        })
+
         for i in range(num_machines):
             # Simular fallas aleatorias
             if np.random.rand() < fail_prob:
@@ -43,7 +62,7 @@ def simulate_process(machine_speeds, lot_size, setup_time, demand, time_limit):
                 time.sleep(setup_time)
                 setup_time_total += setup_time
                 st.write(f"Machine {i+1} setup time for {setup_time:.2f} seconds")
-        
+
         # Verificar si ya se cumplió la demanda
         processed_units = inventories[-1]  # El inventario de productos terminados es la última posición
         if processed_units >= demand:
@@ -53,7 +72,7 @@ def simulate_process(machine_speeds, lot_size, setup_time, demand, time_limit):
     return processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times
 
 # Interfaz de usuario
-st.title("Simulación de Proceso de Producción")
+st.title("Simulación de Proceso de Producción en Tiempo Real")
 
 # Parámetros de entrada
 st.sidebar.header("Configuración del Proceso")
@@ -85,30 +104,32 @@ if start_simulation:
         st.write("¡Requerimiento cumplido!")
     else:
         st.write("No se alcanzó a cumplir el requerimiento.")
-    
-    # Graficar los resultados
-    fig, ax = plt.subplots(2, 2, figsize=(12, 10))
 
-    # Inventarios
-    ax[0, 0].bar(range(len(inventories)), inventories, color='blue')
-    ax[0, 0].set_title("Inventarios por Máquina")
-    ax[0, 0].set_xlabel("Máquinas")
-    ax[0, 0].set_ylabel("Inventario")
+    # Mostrar gráficos en tiempo real
+    st.write("Actualización en tiempo real de inventarios y tiempos")
 
-    # Tiempos acumulados por máquina
-    ax[0, 1].bar(range(len(operation_times)), operation_times, color='green')
-    ax[0, 1].set_title("Tiempos Acumulados por Máquina")
-    ax[0, 1].set_xlabel("Máquinas")
-    ax[0, 1].set_ylabel("Tiempo (segundos)")
+    for data in st.session_state['historical_data']:
+        fig, ax = plt.subplots(2, 2, figsize=(12, 10))
 
-    # Tiempos perdidos por esperas, alistamiento y fallos
-    times_lost = [setup_time_total, fail_time_total] + wait_times
-    ax[1, 0].bar(["Alistamiento", "Fallos"] + [f"Espera Máquina {i+1}" for i in range(len(wait_times))], times_lost, color='red')
-    ax[1, 0].set_title("Tiempos Perdidos")
-    ax[1, 0].set_xlabel("Tipo de Tiempo Perdido")
-    ax[1, 0].set_ylabel("Tiempo (segundos)")
+        # Inventarios en tiempo real
+        ax[0, 0].bar(range(len(data['inventories'])), data['inventories'], color='blue')
+        ax[0, 0].set_title("Inventarios por Máquina")
+        ax[0, 0].set_xlabel("Máquinas")
+        ax[0, 0].set_ylabel("Inventario")
 
-    # Mostrar gráficos
-    st.pyplot(fig)
+        # Tiempos acumulados por máquina en tiempo real
+        ax[0, 1].bar(range(len(data['operation_times'])), data['operation_times'], color='green')
+        ax[0, 1].set_title("Tiempos Acumulados por Máquina")
+        ax[0, 1].set_xlabel("Máquinas")
+        ax[0, 1].set_ylabel("Tiempo (segundos)")
 
+        # Tiempos perdidos por esperas, alistamiento y fallos en tiempo real
+        times_lost = [data['setup_time_total'], data['fail_time_total']] + data['wait_times']
+        ax[1, 0].bar(["Alistamiento", "Fallos"] + [f"Espera Máquina {i+1}" for i in range(len(data['wait_times']))], times_lost, color='red')
+        ax[1, 0].set_title("Tiempos Perdidos")
+        ax[1, 0].set_xlabel("Tipo de Tiempo Perdido")
+        ax[1, 0].set_ylabel("Tiempo (segundos)")
 
+        # Mostrar gráficos
+        st.pyplot(fig)
+        time.sleep(1)  # Pausa de un segundo para la actualización en tiempo real
