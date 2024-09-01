@@ -11,7 +11,7 @@ if 'historical_data' not in st.session_state:
 def simulate_process(machine_speeds, lot_size, setup_time, demand, time_limit):
     num_machines = len(machine_speeds)
     processed_units = 0
-    inventories = [0] * (num_machines + 1)  # Añadimos un espacio para el producto terminado
+    inventories = [lot_size] * (num_machines + 1)  # Inicializar inventario de materia prima
     operation_times = [0] * num_machines
     wait_times = [0] * num_machines
     fail_times = [0] * num_machines
@@ -22,6 +22,10 @@ def simulate_process(machine_speeds, lot_size, setup_time, demand, time_limit):
 
     # Variable para rastrear el tiempo transcurrido en la simulación
     elapsed_time = 0
+
+    # Crear contenedores para gráficos
+    inventory_chart = st.empty()
+    times_chart = st.empty()
 
     while processed_units < demand and elapsed_time < time_limit:
         # Actualizar inventarios y tiempos en cada segundo
@@ -68,6 +72,39 @@ def simulate_process(machine_speeds, lot_size, setup_time, demand, time_limit):
         if processed_units >= demand:
             break
 
+        # Actualizar gráficos en tiempo real
+        with inventory_chart.container():
+            fig, ax = plt.subplots(1, 2, figsize=(12, 5))
+
+            # Inventarios en tiempo real
+            ax[0].bar(range(len(inventories)), inventories, color='blue')
+            ax[0].set_title("Inventarios por Máquina")
+            ax[0].set_xlabel("Máquinas")
+            ax[0].set_ylabel("Inventario")
+
+            # Tiempos acumulados por máquina en tiempo real
+            ax[1].bar(range(len(operation_times)), operation_times, color='green')
+            ax[1].set_title("Tiempos Acumulados por Máquina")
+            ax[1].set_xlabel("Máquinas")
+            ax[1].set_ylabel("Tiempo (segundos)")
+
+            st.pyplot(fig)
+
+        with times_chart.container():
+            fig, ax = plt.subplots()
+
+            # Tiempos perdidos por esperas, alistamiento y fallos en tiempo real
+            times_lost = [setup_time_total, fail_time_total] + wait_times
+            ax.bar(["Alistamiento", "Fallos"] + [f"Espera Máquina {i+1}" for i in range(len(wait_times))], times_lost, color='red')
+            ax.set_title("Tiempos Perdidos")
+            ax.set_xlabel("Tipo de Tiempo Perdido")
+            ax.set_ylabel("Tiempo (segundos)")
+
+            st.pyplot(fig)
+
+        # Pausar un segundo antes de la próxima actualización
+        time.sleep(1)
+
     total_time = time.time() - start_time
     return processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times
 
@@ -104,32 +141,3 @@ if start_simulation:
         st.write("¡Requerimiento cumplido!")
     else:
         st.write("No se alcanzó a cumplir el requerimiento.")
-
-    # Mostrar gráficos en tiempo real
-    st.write("Actualización en tiempo real de inventarios y tiempos")
-
-    for data in st.session_state['historical_data']:
-        fig, ax = plt.subplots(2, 2, figsize=(12, 10))
-
-        # Inventarios en tiempo real
-        ax[0, 0].bar(range(len(data['inventories'])), data['inventories'], color='blue')
-        ax[0, 0].set_title("Inventarios por Máquina")
-        ax[0, 0].set_xlabel("Máquinas")
-        ax[0, 0].set_ylabel("Inventario")
-
-        # Tiempos acumulados por máquina en tiempo real
-        ax[0, 1].bar(range(len(data['operation_times'])), data['operation_times'], color='green')
-        ax[0, 1].set_title("Tiempos Acumulados por Máquina")
-        ax[0, 1].set_xlabel("Máquinas")
-        ax[0, 1].set_ylabel("Tiempo (segundos)")
-
-        # Tiempos perdidos por esperas, alistamiento y fallos en tiempo real
-        times_lost = [data['setup_time_total'], data['fail_time_total']] + data['wait_times']
-        ax[1, 0].bar(["Alistamiento", "Fallos"] + [f"Espera Máquina {i+1}" for i in range(len(data['wait_times']))], times_lost, color='red')
-        ax[1, 0].set_title("Tiempos Perdidos")
-        ax[1, 0].set_xlabel("Tipo de Tiempo Perdido")
-        ax[1, 0].set_ylabel("Tiempo (segundos)")
-
-        # Mostrar gráficos
-        st.pyplot(fig)
-        time.sleep(1)  # Pausa de un segundo para la actualización en tiempo real
