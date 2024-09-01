@@ -45,7 +45,7 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
         for i in range(num_machines):
             # Simular fallas aleatorias
             if np.random.rand() < fail_prob:
-                fail_duration = np.random.uniform(5, 15)
+                fail_duration = np.random.uniform(1, 3)
                 fail_time_total[i] += fail_duration
                 fail_times[i] += fail_duration
                 st.write(f"Machine {i+1} failure for {fail_duration:.2f} seconds")
@@ -62,12 +62,15 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
                 time.sleep(processing_time)  # Simular el tiempo de procesamiento
 
                 # Agregar el lote procesado al inventario de salida
-                inventories[i + 1] += lot_size  # Transferir el lote procesado a la siguiente etapa
+                if i + 1 < len(inventories):
+                    inventories[i + 1] += lot_size  # Transferir el lote procesado a la siguiente etapa
 
                 # Simular tiempo de alistamiento específico para cada máquina
-                time.sleep(setup_times[i])
-                setup_time_total[i] += setup_times[i]
-                st.write(f"Machine {i+1} setup time for {setup_times[i]:.2f} seconds")
+                if i < len(setup_times):
+                    setup_time = setup_times[i]
+                    time.sleep(setup_time)
+                    setup_time_total[i] += setup_time
+                    st.write(f"Machine {i+1} setup time for {setup_time:.2f} seconds")
             else:
                 wait_times[i] += 1  # Incrementar tiempo de espera si no hay suficiente inventario
 
@@ -138,9 +141,9 @@ machine_speeds = [
 ]
 lot_size = st.sidebar.slider("Tamaño del lote", 1, 10, 6)
 setup_times = [
-    st.sidebar.slider("Tiempo de alistamiento de Máquina 1 (segundos)", 1, 60, 10),
-    st.sidebar.slider("Tiempo de alistamiento de Máquina 2 (segundos)", 1, 60, 15),
-    st.sidebar.slider("Tiempo de alistamiento de Máquina 3 (segundos)", 1, 60, 12)
+    st.sidebar.slider("Tiempo de alistamiento de Máquina 1 (segundos)", 0, 60, 10),
+    st.sidebar.slider("Tiempo de alistamiento de Máquina 2 (segundos)", 0, 60, 15),
+    st.sidebar.slider("Tiempo de alistamiento de Máquina 3 (segundos)", 0, 60, 12)
 ]
 demand = st.sidebar.slider("Cantidad requerida por el cliente", 1, 100, 20)
 time_limit = st.sidebar.slider("Tiempo límite (segundos)", 1, 600, 300)
