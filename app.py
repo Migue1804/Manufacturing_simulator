@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 import numpy as np
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 # Inicializar el estado de la sesión para almacenar los datos de cada segundo
 if 'historical_data' not in st.session_state:
@@ -26,6 +26,22 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
     # Crear contenedores para gráficos
     inventory_chart = st.empty()
     times_chart = st.empty()
+
+    # Inicializar gráficos vacíos
+    with inventory_chart.container():
+        fig = go.Figure()
+        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines+1)], y=inventories, name='Inventario'))
+        fig.update_layout(title='Inventarios por Máquina', xaxis_title='Máquinas', yaxis_title='Inventario')
+        st.plotly_chart(fig, use_container_width=True)
+
+    with times_chart.container():
+        fig = go.Figure()
+        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)], y=operation_times, name='Operación', marker_color='green'))
+        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)], y=setup_time_total, name='Alistamiento', marker_color='blue'))
+        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)], y=fail_time_total, name='Fallas', marker_color='red'))
+        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)], y=wait_times, name='Esperas', marker_color='orange'))
+        fig.update_layout(title='Tiempos Acumulados por Máquina', xaxis_title='Máquinas', yaxis_title='Tiempo (segundos)', barmode='stack')
+        st.plotly_chart(fig, use_container_width=True)
 
     while processed_units < demand and elapsed_time < time_limit:
         # Actualizar inventarios y tiempos en cada segundo
@@ -76,34 +92,19 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
 
         # Actualizar gráficos en tiempo real
         with inventory_chart.container():
-            fig, ax = plt.subplots(1, 2, figsize=(12, 5))
-
-            # Inventarios en tiempo real
-            ax[0].bar(range(len(inventories)), inventories, color='blue')
-            ax[0].set_title("Inventarios por Máquina")
-            ax[0].set_xlabel("Máquinas")
-            ax[0].set_ylabel("Inventario")
-
-            # Tiempos acumulados por máquina en tiempo real
-            ax[1].bar(range(len(operation_times)), operation_times, color='green')
-            ax[1].set_title("Tiempos Acumulados por Máquina")
-            ax[1].set_xlabel("Máquinas")
-            ax[1].set_ylabel("Tiempo (segundos)")
-
-            st.pyplot(fig)
+            fig = go.Figure()
+            fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines+1)], y=inventories, name='Inventario'))
+            fig.update_layout(title='Inventarios por Máquina', xaxis_title='Máquinas', yaxis_title='Inventario')
+            st.plotly_chart(fig, use_container_width=True)
 
         with times_chart.container():
-            fig, ax = plt.subplots()
-
-            # Tiempos perdidos por esperas, alistamiento y fallos en tiempo real
-            times_lost = setup_time_total + fail_time_total + wait_times
-            labels = [f"Setup Máquina {i+1}" for i in range(num_machines)] + [f"Fallo Máquina {i+1}" for i in range(num_machines)] + [f"Espera Máquina {i+1}" for i in range(num_machines)]
-            ax.bar(labels, times_lost, color='red')
-            ax.set_title("Tiempos Perdidos")
-            ax.set_xlabel("Tipo de Tiempo Perdido")
-            ax.set_ylabel("Tiempo (segundos)")
-
-            st.pyplot(fig)
+            fig = go.Figure()
+            fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)], y=operation_times, name='Operación', marker_color='green'))
+            fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)], y=setup_time_total, name='Alistamiento', marker_color='blue'))
+            fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)], y=fail_time_total, name='Fallas', marker_color='red'))
+            fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)], y=wait_times, name='Esperas', marker_color='orange'))
+            fig.update_layout(title='Tiempos Acumulados por Máquina', xaxis_title='Máquinas', yaxis_title='Tiempo (segundos)', barmode='stack')
+            st.plotly_chart(fig, use_container_width=True)
 
         # Pausar un segundo antes de la próxima actualización
         time.sleep(1)
@@ -143,10 +144,5 @@ if start_simulation:
     st.write(f"Inventarios entre máquinas: {inventories}")
     st.write(f"Tiempos de operación: {operation_times}")
     st.write(f"Tiempos de alistamiento total por máquina: {setup_time_total}")
-    st.write(f"Tiempos de fallas total por máquina: {fail_time_total}")
-    st.write(f"Tiempos de espera total por máquina: {wait_times}")
-    
-    if processed_units >= demand:
-        st.write("¡Requerimiento cumplido!")
-    else:
-        st.write("No se alcanzó a cumplir el requerimiento.")
+    st.write(f"Tiempos de fallos total por máquina: {fail_time_total}")
+    st.write(f"Tiempos de espera: {wait_times}")
