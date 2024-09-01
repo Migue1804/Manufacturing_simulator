@@ -18,22 +18,17 @@ def simulate_process(machine_speeds, lot_size, setup_time, demand, time_limit):
 
     while processed_units < demand and (time.time() - start_time) < time_limit:
         for i in range(num_machines):
-            # Si la máquina actual no tiene suficiente inventario para procesar, esperar
-            if i == 0 and inventories[i] < lot_size:  # Para la primera máquina, verificar la materia prima
-                inventories[i] += lot_size  # Simulación de llegada de materia prima en lotes
-                st.write(f"Lote de materia prima ingresado: {lot_size} unidades")
+            # Simular fallas aleatorias
+            if np.random.rand() < fail_prob:
+                fail_duration = np.random.uniform(5, 15)
+                fail_time_total += fail_duration
+                fail_times[i] += fail_duration
+                st.write(f"Machine {i+1} failure for {fail_duration:.2f} seconds")
+                time.sleep(fail_duration)
+                continue
 
-            # Procesar el lote solo si hay suficiente inventario de entrada
+            # Procesar el lote si hay suficiente inventario de entrada
             if inventories[i] >= lot_size:
-                # Simular fallas aleatorias
-                if np.random.rand() < fail_prob:
-                    fail_duration = np.random.uniform(5, 15)
-                    fail_time_total += fail_duration
-                    fail_times[i] += fail_duration
-                    st.write(f"Machine {i+1} failure for {fail_duration:.2f} seconds")
-                    time.sleep(fail_duration)
-                    continue
-
                 # Tiempo de procesamiento
                 processing_time = machine_speeds[i] * lot_size
                 operation_times[i] += processing_time
@@ -42,17 +37,15 @@ def simulate_process(machine_speeds, lot_size, setup_time, demand, time_limit):
                 time.sleep(processing_time)  # Simular el tiempo de procesamiento
 
                 # Agregar el lote procesado al inventario de salida
-                if i < num_machines - 1:
-                    inventories[i + 1] += lot_size  # Transferir el lote procesado a la siguiente máquina
-                else:
-                    processed_units += lot_size  # Si es la última máquina, añadir al producto terminado
+                inventories[i + 1] += lot_size  # Transferir el lote procesado a la siguiente etapa
 
                 # Simular tiempo de alistamiento
                 time.sleep(setup_time)
                 setup_time_total += setup_time
                 st.write(f"Machine {i+1} setup time for {setup_time:.2f} seconds")
-
+        
         # Verificar si ya se cumplió la demanda
+        processed_units = inventories[-1]  # El inventario de productos terminados es la última posición
         if processed_units >= demand:
             break
 
@@ -117,4 +110,5 @@ if start_simulation:
 
     # Mostrar gráficos
     st.pyplot(fig)
+
 
