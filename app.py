@@ -9,17 +9,20 @@ if 'historical_data' not in st.session_state:
 
 # Función para calcular la probabilidad de fallas basada en la confiabilidad
 def calculate_fail_prob(reliability):
+    # La probabilidad de fallas aumenta a medida que la confiabilidad disminuye
+    # La probabilidad máxima de fallas es 1 cuando la confiabilidad es 0
+    # La probabilidad mínima de fallas es 0 cuando la confiabilidad es 100
     return (1 - reliability / 100) * 0.5  # Ajusta el factor 0.5 según sea necesario
 
 # Función para simular el proceso
 def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, initial_inventory, reliability):
     num_machines = len(machine_speeds)
     processed_units = 0
-    inventories = [initial_inventory] + [0] * num_machines
+    inventories = [initial_inventory] + [0] * num_machines  # Inicializar inventario de materia prima y etapas
     operation_times = [0] * num_machines
     wait_times = [0] * num_machines
     fail_times = [0] * num_machines
-    fail_prob = calculate_fail_prob(reliability)
+    fail_prob = calculate_fail_prob(reliability)  # Ajustar la probabilidad de fallas según la confiabilidad
     setup_time_total = [0] * num_machines
     fail_time_total = [0] * num_machines
     start_time = time.time()
@@ -58,20 +61,16 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
 
             # Procesar el lote si hay suficiente inventario de entrada
             if inventories[i] >= lot_size:
-                # Evitar división por cero si la velocidad es 0
-                if machine_speeds[i] > 0:
-                    processing_time = machine_speeds[i] * lot_size
-                else:
-                    processing_time = float('inf')  # Tiempo infinito si la velocidad es 0
-
+                # Tiempo de procesamiento
+                processing_time = machine_speeds[i] * lot_size
                 operation_times[i] += processing_time
-                inventories[i] -= lot_size
+                inventories[i] -= lot_size  # Restar el lote procesado del inventario de entrada
                 st.write(f"Machine {i+1} processing for {processing_time:.2f} seconds")
                 time.sleep(processing_time)  # Simular el tiempo de procesamiento
 
                 # Agregar el lote procesado al inventario de salida
                 if i + 1 < len(inventories):
-                    inventories[i + 1] += lot_size
+                    inventories[i + 1] += lot_size  # Transferir el lote procesado a la siguiente etapa
 
                 # Simular tiempo de alistamiento específico para cada máquina
                 if i < len(setup_times):
@@ -83,7 +82,7 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
                 wait_times[i] += 1  # Incrementar tiempo de espera si no hay suficiente inventario
 
         # Verificar si ya se cumplió la demanda
-        processed_units = inventories[-1]
+        processed_units = inventories[-1]  # El inventario de productos terminados es la última posición
         if processed_units >= demand:
             break
 
@@ -143,9 +142,9 @@ st.title("Simulación de Proceso de Producción en Tiempo Real")
 # Parámetros de entrada
 st.sidebar.header("Configuración del Proceso")
 machine_speeds = [
-    st.sidebar.slider("Velocidad de la Máquina 1 (segundos por unidad)", 0, 20, 5),
-    st.sidebar.slider("Velocidad de la Máquina 2 (segundos por unidad)", 0, 20, 10),
-    st.sidebar.slider("Velocidad de la Máquina 3 (segundos por unidad)", 0, 20, 7)
+    st.sidebar.slider("Velocidad de la Máquina 1 (segundos por unidad)", 1, 20, 5),
+    st.sidebar.slider("Velocidad de la Máquina 2 (segundos por unidad)", 1, 20, 10),
+    st.sidebar.slider("Velocidad de la Máquina 3 (segundos por unidad)", 1, 20, 7)
 ]
 lot_size = st.sidebar.slider("Tamaño del lote", 1, 10, 6)
 setup_times = [
