@@ -29,22 +29,6 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
     lead_time_chart = st.empty()
     customer_time_chart = st.empty()
 
-    # Inicializar gráficos vacíos
-    with inventory_chart.container():
-        fig = go.Figure()
-        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)] + ['Producto Terminado'], y=inventories, name='Inventario'))
-        fig.update_layout(title='Inventarios por Máquina', xaxis_title='Máquinas/Producto Terminado', yaxis_title='Inventario')
-        st.plotly_chart(fig, use_container_width=True)
-
-    with times_chart.container():
-        fig = go.Figure()
-        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)], y=operation_times, name='Operación', marker_color='green'))
-        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)], y=setup_time_total, name='Alistamiento', marker_color='blue'))
-        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)], y=fail_time_total, name='Fallas', marker_color='red'))
-        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)], y=wait_times, name='Esperas', marker_color='orange'))
-        fig.update_layout(title='Tiempos Acumulados por Máquina', xaxis_title='Máquinas', yaxis_title='Tiempo (segundos)', barmode='stack')
-        st.plotly_chart(fig, use_container_width=True)
-
     while processed_units < demand and elapsed_time < time_limit:
         # Actualizar inventarios y tiempos en cada segundo
         elapsed_time = time.time() - start_time
@@ -96,6 +80,7 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
         with inventory_chart.container():
             fig = go.Figure()
             fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)] + ['Producto Terminado'], y=inventories, name='Inventario'))
+            fig.add_trace(go.Scatter(x=[f'Producto Terminado'], y=[demand], mode='lines+markers', name='Demanda Requerida', line=dict(color='red', width=2)))
             fig.update_layout(title='Inventarios por Máquina', xaxis_title='Máquinas/Producto Terminado', yaxis_title='Inventario')
             st.plotly_chart(fig, use_container_width=True)
 
