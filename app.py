@@ -7,15 +7,22 @@ import plotly.graph_objects as go
 if 'historical_data' not in st.session_state:
     st.session_state['historical_data'] = []
 
+# Función para calcular la probabilidad de fallas basada en la confiabilidad
+def calculate_fail_prob(reliability):
+    # La probabilidad de fallas aumenta a medida que la confiabilidad disminuye
+    # La probabilidad máxima de fallas es 1 cuando la confiabilidad es 0
+    # La probabilidad mínima de fallas es 0 cuando la confiabilidad es 100
+    return (1 - reliability / 100) * 0.5  # Ajusta el factor 0.5 según sea necesario
+
 # Función para simular el proceso
-def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, initial_inventory):
+def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, initial_inventory, reliability):
     num_machines = len(machine_speeds)
     processed_units = 0
     inventories = [initial_inventory] + [0] * num_machines  # Inicializar inventario de materia prima y etapas
     operation_times = [0] * num_machines
     wait_times = [0] * num_machines
     fail_times = [0] * num_machines
-    fail_prob = 0.05
+    fail_prob = calculate_fail_prob(reliability)  # Ajustar la probabilidad de fallas según la confiabilidad
     setup_time_total = [0] * num_machines
     fail_time_total = [0] * num_machines
     start_time = time.time()
@@ -45,7 +52,7 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
         for i in range(num_machines):
             # Simular fallas aleatorias
             if np.random.rand() < fail_prob:
-                fail_duration = np.random.uniform(1, 3)
+                fail_duration = np.random.uniform(1, 10)  # Ajuste del rango de duración de fallas
                 fail_time_total[i] += fail_duration
                 fail_times[i] += fail_duration
                 st.write(f"Machine {i+1} failure for {fail_duration:.2f} seconds")
@@ -83,7 +90,7 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
         with inventory_chart.container():
             fig = go.Figure()
             fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)] + ['Producto Terminado'], y=inventories, name='Inventario'))
-            fig.add_trace(go.Scatter(x=[f'Producto Terminado'], y=[demand], mode='lines+markers', name='Demanda Requerida', line=dict(color='red', width=2)))
+            fig.add_trace(go.Scatter(x=['Producto Terminado'], y=[demand], mode='lines+markers', name='Demanda Requerida', line=dict(color='red', width=2)))
             fig.update_layout(title='Inventarios por Máquina', xaxis_title='Máquinas/Producto Terminado', yaxis_title='Inventario')
             st.plotly_chart(fig, use_container_width=True)
 
@@ -148,6 +155,7 @@ setup_times = [
 demand = st.sidebar.slider("Cantidad requerida por el cliente", 1, 100, 20)
 time_limit = st.sidebar.slider("Tiempo límite (segundos)", 1, 600, 300)
 initial_inventory = st.sidebar.slider("Inventario inicial de materia prima", 1, 100, 50)
+reliability = st.sidebar.slider("Confiabilidad del equipo (%)", 0, 100, 100)
 
 start_simulation = st.sidebar.button("Iniciar Simulación")
 
@@ -155,7 +163,7 @@ if start_simulation:
     st.write("Iniciando simulación...")
     st.write("Tiempo límite:", time_limit, "segundos")
     processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times, lead_time, conclusion = simulate_process(
-        machine_speeds, lot_size, setup_times, demand, time_limit, initial_inventory)
+        machine_speeds, lot_size, setup_times, demand, time_limit, initial_inventory, reliability)
     
     st.write(f"Unidades procesadas: {processed_units}")
     st.write(f"Inventarios entre máquinas: {inventories}")
