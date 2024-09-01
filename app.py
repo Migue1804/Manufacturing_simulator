@@ -1,7 +1,6 @@
 import streamlit as st
 import time
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 
 # Función para simular el proceso
@@ -16,10 +15,16 @@ def simulate_process(machine_speeds, lot_size, setup_time, demand, time_limit):
     setup_time_total = 0
     fail_time_total = 0
     start_time = time.time()
-    
+
     while processed_units < demand and (time.time() - start_time) < time_limit:
         for i in range(num_machines):
-            if inventories[i] < lot_size:
+            # Si la máquina actual no tiene suficiente inventario para procesar, esperar
+            if i == 0 and inventories[i] < lot_size:  # Para la primera máquina, verificar la materia prima
+                inventories[i] += lot_size  # Simulación de llegada de materia prima en lotes
+                st.write(f"Lote de materia prima ingresado: {lot_size} unidades")
+
+            # Procesar el lote solo si hay suficiente inventario de entrada
+            if inventories[i] >= lot_size:
                 # Simular fallas aleatorias
                 if np.random.rand() < fail_prob:
                     fail_duration = np.random.uniform(5, 15)
@@ -28,24 +33,28 @@ def simulate_process(machine_speeds, lot_size, setup_time, demand, time_limit):
                     st.write(f"Machine {i+1} failure for {fail_duration:.2f} seconds")
                     time.sleep(fail_duration)
                     continue
-                
+
                 # Tiempo de procesamiento
                 processing_time = machine_speeds[i] * lot_size
                 operation_times[i] += processing_time
-                inventories[i] += lot_size
-                processed_units += lot_size
-                
-                if processed_units >= demand:
-                    break
-                
-                # Transferencia entre máquinas
+                inventories[i] -= lot_size  # Restar el lote procesado del inventario de entrada
+                st.write(f"Machine {i+1} processing for {processing_time:.2f} seconds")
+                time.sleep(processing_time)  # Simular el tiempo de procesamiento
+
+                # Agregar el lote procesado al inventario de salida
                 if i < num_machines - 1:
-                    inventories[i] -= lot_size
-                    inventories[i+1] += lot_size
-                    time.sleep(setup_time)  # Tiempo de alistamiento
-                    setup_time_total += setup_time
+                    inventories[i + 1] += lot_size  # Transferir el lote procesado a la siguiente máquina
                 else:
-                    inventories[i] -= lot_size
+                    processed_units += lot_size  # Si es la última máquina, añadir al producto terminado
+
+                # Simular tiempo de alistamiento
+                time.sleep(setup_time)
+                setup_time_total += setup_time
+                st.write(f"Machine {i+1} setup time for {setup_time:.2f} seconds")
+
+        # Verificar si ya se cumplió la demanda
+        if processed_units >= demand:
+            break
 
     total_time = time.time() - start_time
     return processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times
@@ -66,7 +75,6 @@ demand = st.sidebar.slider("Cantidad requerida por el cliente", 1, 100, 20)
 time_limit = st.sidebar.slider("Tiempo límite (segundos)", 1, 600, 300)
 
 start_simulation = st.sidebar.button("Iniciar Simulación")
-stop_simulation = st.sidebar.button("Detener Simulación")
 
 if start_simulation:
     st.write("Iniciando simulación...")
@@ -109,3 +117,4 @@ if start_simulation:
 
     # Mostrar gráficos
     st.pyplot(fig)
+
