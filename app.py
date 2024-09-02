@@ -158,8 +158,8 @@ setup_times = [
     st.sidebar.slider("Tiempo de Alistamiento Máquina 2 (segundos)", 0, 10, 5),
     st.sidebar.slider("Tiempo de Alistamiento Máquina 3 (segundos)", 0, 10, 5)
 ]
-demand = st.sidebar.number_input("Cantidad Requerida por el Cliente", min_value=1, value=100)
-time_limit = st.sidebar.number_input("Tiempo Requerido por el Cliente (segundos)", min_value=1, value=500)
+demand = st.sidebar.number_input("Cantidad Requerida por el Cliente", min_value=1, value=10)
+time_limit = st.sidebar.number_input("Tiempo Requerido por el Cliente (segundos)", min_value=1, value=350)
 initial_inventory = st.sidebar.number_input("Inventario Inicial de Materia Prima", min_value=0, value=50)
 reliability = st.sidebar.slider("Confiabilidad del Equipo (%)", 0, 100, 85)
 
