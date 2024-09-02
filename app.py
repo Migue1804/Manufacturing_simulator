@@ -23,6 +23,7 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
     setup_time_total = [0] * num_machines
     fail_time_total = [0] * num_machines
     start_time = time.time()
+    accumulated_wait_time = [0] * num_machines  # Para acumular tiempos de espera de cada máquina
 
     # Variable para rastrear el tiempo transcurrido en la simulación
     elapsed_time = 0
@@ -75,6 +76,14 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
                     time.sleep(setup_time)
                     setup_time_total[i] += setup_time
                     st.write(f"Machine {i+1} setup time for {setup_time:.2f} seconds")
+                    
+                # Actualizar tiempos de espera para máquinas siguientes
+                if i < num_machines - 1:
+                    # La máquina i+1 debe esperar el tiempo de procesamiento de la máquina i
+                    accumulated_wait_time[i + 1] += processing_time
+                    wait_times[i + 1] += accumulated_wait_time[i + 1]
+                    st.write(f"Machine {i+1} wait time for next machine updated to {accumulated_wait_time[i + 1]:.2f} seconds")
+
             else:
                 # Si no hay suficiente inventario, incrementar el tiempo de espera
                 if i > 0:
@@ -148,20 +157,20 @@ st.title("Simulación de Proceso de Producción en Tiempo Real")
 # Parámetros de entrada
 st.sidebar.header("Configuración del Proceso")
 machine_speeds = [
-    st.sidebar.slider("Velocidad de la Máquina 1 (segundos por unidad)", 1, 20, 5),
-    st.sidebar.slider("Velocidad de la Máquina 2 (segundos por unidad)", 1, 20, 10),
-    st.sidebar.slider("Velocidad de la Máquina 3 (segundos por unidad)", 1, 20, 15)
+    st.sidebar.slider("Velocidad de Procesamiento de la Máquina 1 (segundos por unidad)", 1, 20, 5 , 0.1),
+    st.sidebar.slider("Velocidad de Procesamiento de la Máquina 2 (segundos por unidad)", 1, 20, 10 , 0.1),
+    st.sidebar.slider("Velocidad de Procesamiento de la Máquina 3 (segundos por unidad)", 1, 20, 7 , 0.1)
 ]
-lot_size = st.sidebar.slider("Tamaño del Lote (unidades)", 1, 10, 5)
+lot_size = st.sidebar.slider("Tamaño del Lote (unidades)", 1, 10, 6)
 setup_times = [
-    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 1 (segundos)", 0, 20, 5),
-    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 2 (segundos)", 0, 20, 10),
-    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 3 (segundos)", 0, 20, 15)
+    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 1 (segundos)", 0, 10, 3 , 0.1),
+    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 2 (segundos)", 0, 10, 2 , 0.1),
+    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 3 (segundos)", 0, 10, 1 , 0.1)
 ]
 demand = st.sidebar.slider("Demanda Requerida (unidades)", 10, 100, 50)
-time_limit = st.sidebar.slider("Tiempo Máximo de Simulación (segundos)", 60, 3600, 1800)
-initial_inventory = st.sidebar.slider("Inventario Inicial de Materia Prima (unidades)", 0, 100, 50)
-reliability = st.sidebar.slider("Confiabilidad del Equipo (%)", 0, 100, 100)
+time_limit = st.sidebar.slider("Tiempo Máximo de Simulación (segundos)", 60, 500, 300)
+initial_inventory = st.sidebar.slider("Inventario Inicial de Materia Prima (unidades)", 0, 50, 30)
+reliability = st.sidebar.slider("OEE (%)", 0, 100, 85)
 
 if st.sidebar.button("Iniciar Simulación"):
     processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times, lead_time, conclusion = simulate_process(
