@@ -167,7 +167,7 @@ setup_times = [
     st.sidebar.slider("Tiempo de Alistamiento de la Máquina 2 (segundos)", 0, 10, 2 ),
     st.sidebar.slider("Tiempo de Alistamiento de la Máquina 3 (segundos)", 0, 10, 1 )
 ]
-demand = st.sidebar.slider("Demanda Requerida (unidades)", 10, 100, 50)
+demand = st.sidebar.slider("Demanda Requerida (unidades)", 0, 50, 10)
 time_limit = st.sidebar.slider("Tiempo Máximo de Simulación (segundos)", 60, 500, 300)
 initial_inventory = st.sidebar.slider("Inventario Inicial de Materia Prima (unidades)", 0, 50, 30)
 reliability = st.sidebar.slider("OEE (%)", 0, 100, 85)
