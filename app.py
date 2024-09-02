@@ -163,19 +163,19 @@ st.title("Simulación de Proceso de Producción en Tiempo Real")
 st.sidebar.header("Configuración del Proceso")
 machine_speeds = [
     st.sidebar.slider("Velocidad de la Máquina 1 (segundos por unidad)", 1, 20, 5),
-    st.sidebar.slider("Velocidad de la Máquina 2 (segundos por unidad)", 1, 20, 8),
-    st.sidebar.slider("Velocidad de la Máquina 3 (segundos por unidad)", 1, 20, 15)
+    st.sidebar.slider("Velocidad de la Máquina 2 (segundos por unidad)", 1, 20, 10),
+    st.sidebar.slider("Velocidad de la Máquina 3 (segundos por unidad)", 1, 20, 7)
 ]
-lot_size = st.sidebar.slider("Tamaño de Lote", 1, 20, 3)
+lot_size = st.sidebar.slider("Tamaño de Lote", 1, 10, 3)
 setup_times = [
     st.sidebar.slider("Tiempo de Alistamiento de la Máquina 1 (segundos)", 0, 10, 2),
     st.sidebar.slider("Tiempo de Alistamiento de la Máquina 2 (segundos)", 0, 10, 3),
-    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 3 (segundos)", 0, 10, 4)
+    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 3 (segundos)", 0, 10, 2)
 ]
-demand = st.sidebar.slider("Cantidad Requerida por el Cliente", 1, 100, 10)
-time_limit = st.sidebar.slider("Tiempo Requerido por el Cliente (segundos)", 1, 1000, 300)
-initial_inventory = st.sidebar.slider("Inventario Inicial de Materia Prima", 1, 100, 50)
-reliability = st.sidebar.slider("Confiabilidad del Equipo (%)", 0, 100, 100)
+demand = st.sidebar.slider("Cantidad Requerida por el Cliente", 1, 50, 10)
+time_limit = st.sidebar.slider("Tiempo Requerido por el Cliente (segundos)", 1, 500, 300)
+initial_inventory = st.sidebar.slider("Inventario Inicial de Materia Prima", 1, 50, 30)
+reliability = st.sidebar.slider("OEE (%)", 0, 100, 85)
 
 # Ejecutar simulación
 if st.sidebar.button("Iniciar Simulación"):
