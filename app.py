@@ -36,7 +36,7 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
     lead_time_chart = st.empty()
     customer_time_chart = st.empty()
 
-    while processed_units < demand and elapsed_time < time_limit:
+    while elapsed_time < time_limit:
         # Actualizar inventarios y tiempos en cada segundo
         elapsed_time = time.time() - start_time
         st.session_state['historical_data'].append({
@@ -128,8 +128,16 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
         # Pausar un segundo antes de la próxima actualización
         time.sleep(1)
 
+    # Asegurarse de que se grafique el inventario final de productos terminados
+    with inventory_chart.container():
+        fig = go.Figure()
+        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)] + ['Producto Terminado'], y=inventories, name='Inventario'))
+        fig.add_trace(go.Scatter(x=['Producto Terminado'], y=[demand], mode='lines+markers', name='Demanda Requerida', line=dict(color='red', width=2)))
+        fig.update_layout(title='Inventarios por Máquina', xaxis_title='Máquinas/Producto Terminado', yaxis_title='Inventario')
+        st.plotly_chart(fig, use_container_width=True)
+
     total_time = time.time() - start_time
-    if lead_time <= time_limit:
+    if processed_units >= demand and lead_time <= time_limit:
         conclusion = "¡Requerimiento cumplido!"
     else:
         conclusion = "No se alcanzó a cumplir el requerimiento."
