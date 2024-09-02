@@ -156,14 +156,14 @@ machine_speeds = [
 ]
 lot_size = st.sidebar.slider("Tamaño del lote", 1, 10, 6)
 setup_times = [
-    st.sidebar.slider("Tiempo de alistamiento de Máquina 1 (segundos)", 0, 60, 10),
-    st.sidebar.slider("Tiempo de alistamiento de Máquina 2 (segundos)", 0, 60, 15),
-    st.sidebar.slider("Tiempo de alistamiento de Máquina 3 (segundos)", 0, 60, 12)
+    st.sidebar.slider("Tiempo de alistamiento de Máquina 1 (segundos)", 0, 5, 1),
+    st.sidebar.slider("Tiempo de alistamiento de Máquina 2 (segundos)", 0, 5, 1),
+    st.sidebar.slider("Tiempo de alistamiento de Máquina 3 (segundos)", 0, 5, 1)
 ]
-demand = st.sidebar.slider("Cantidad requerida por el cliente", 1, 100, 20)
+demand = st.sidebar.slider("Cantidad requerida por el cliente", 1, 50, 20)
 time_limit = st.sidebar.slider("Tiempo límite (segundos)", 1, 600, 300)
-initial_inventory = st.sidebar.slider("Inventario inicial de materia prima", 1, 100, 50)
-reliability = st.sidebar.slider("Confiabilidad del equipo (%)", 0, 100, 100)
+initial_inventory = st.sidebar.slider("Inventario inicial de materia prima", 1, 50, 20)
+reliability = st.sidebar.slider("OEE del equipo (%)", 0, 100, 100)
 
 start_simulation = st.sidebar.button("Iniciar Simulación")
 
