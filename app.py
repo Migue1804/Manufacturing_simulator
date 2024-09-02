@@ -73,9 +73,11 @@ if st.button("Iniciar Simulación"):
     start_time = time.time()
     
     # Datos para gráficos
-    tiempos = {'Tiempo': [], 'Tiempos de Máquina 1': [], 'Tiempos de Máquina 2': [], 'Tiempos de Máquina 3': []}
+    tiempos = {'Tiempo': [], 'Tiempo Máquina 1': [], 'Tiempo Máquina 2': [], 'Tiempo Máquina 3': []}
     inventarios = {'Tiempo': [], 'Inventario MP': [], 'Inventario en Proceso M2': [], 'Inventario en Proceso M3': [], 'Inventario PT': []}
-    lead_times = {'Tiempo': [], 'Lead Time': [], 'Tiempo Requerido': [tiempo_requerido_cliente] * 1000}
+    tiempos_detalle = {'Tiempo': [], 'Ciclo Máquina 1': [], 'Ajuste Máquina 1': [], 'Fallo Máquina 1': [], 'Espera Máquina 1': [],
+                        'Ciclo Máquina 2': [], 'Ajuste Máquina 2': [], 'Fallo Máquina 2': [], 'Espera Máquina 2': [],
+                        'Ciclo Máquina 3': [], 'Ajuste Máquina 3': [], 'Fallo Máquina 3': [], 'Espera Máquina 3': []}
     
     while lotes_procesados < requerimiento_cliente:
         # Máquina 1
@@ -96,9 +98,9 @@ if st.button("Iniciar Simulación"):
         # Actualización de tiempos y estados
         tiempo_simulacion = time.time() - start_time
         tiempos['Tiempo'].append(tiempo_simulacion)
-        tiempos['Tiempos de Máquina 1'].append(tiempo_uso_m1)
-        tiempos['Tiempos de Máquina 2'].append(tiempo_uso_m2)
-        tiempos['Tiempos de Máquina 3'].append(tiempo_uso_m3)
+        tiempos['Tiempo Máquina 1'].append(tiempo_uso_m1)
+        tiempos['Tiempo Máquina 2'].append(tiempo_uso_m2)
+        tiempos['Tiempo Máquina 3'].append(tiempo_uso_m3)
         
         inventarios['Tiempo'].append(tiempo_simulacion)
         inventarios['Inventario MP'].append(inventario_mp)
@@ -106,9 +108,20 @@ if st.button("Iniciar Simulación"):
         inventarios['Inventario en Proceso M3'].append(inventario_proceso_m3)
         inventarios['Inventario PT'].append(inventario_pt)
         
-        lead_times['Tiempo'].append(tiempo_simulacion)
-        lead_times['Lead Time'].append(tiempo_ajuste_total_m1 + tiempo_ajuste_total_m2 + tiempo_ajuste_total_m3 + tiempo_fallo_total_m1 + tiempo_fallo_total_m2 + tiempo_fallo_total_m3 + tiempo_espera_total_m1 + tiempo_espera_total_m2 + tiempo_espera_total_m3)
-        
+        tiempos_detalle['Tiempo'].append(tiempo_simulacion)
+        tiempos_detalle['Ciclo Máquina 1'].append(tiempo_ciclo_m1)
+        tiempos_detalle['Ajuste Máquina 1'].append(tiempo_ajuste_m1)
+        tiempos_detalle['Fallo Máquina 1'].append(tiempo_fallo_total_m1)
+        tiempos_detalle['Espera Máquina 1'].append(tiempo_espera_total_m1)
+        tiempos_detalle['Ciclo Máquina 2'].append(tiempo_ciclo_m2)
+        tiempos_detalle['Ajuste Máquina 2'].append(tiempo_ajuste_m2)
+        tiempos_detalle['Fallo Máquina 2'].append(tiempo_fallo_total_m2)
+        tiempos_detalle['Espera Máquina 2'].append(tiempo_espera_total_m2)
+        tiempos_detalle['Ciclo Máquina 3'].append(tiempo_ciclo_m3)
+        tiempos_detalle['Ajuste Máquina 3'].append(tiempo_ajuste_m3)
+        tiempos_detalle['Fallo Máquina 3'].append(tiempo_fallo_total_m3)
+        tiempos_detalle['Espera Máquina 3'].append(tiempo_espera_total_m3)
+
         # Mostrar datos en tiempo real
         st.write(f"Inventario de MP: {inventario_mp}")
         st.write(f"Inventario en Proceso M2: {inventario_proceso_m2}")
@@ -118,27 +131,36 @@ if st.button("Iniciar Simulación"):
         st.write(f"Tiempos de Máquina 1 - Ciclo: {tiempo_uso_m1}, Ajuste: {tiempo_ajuste_total_m1}, Fallo: {tiempo_fallo_total_m1}, Espera: {tiempo_espera_total_m1}")
         st.write(f"Tiempos de Máquina 2 - Ciclo: {tiempo_uso_m2}, Ajuste: {tiempo_ajuste_total_m2}, Fallo: {tiempo_fallo_total_m2}, Espera: {tiempo_espera_total_m2}")
         st.write(f"Tiempos de Máquina 3 - Ciclo: {tiempo_uso_m3}, Ajuste: {tiempo_ajuste_total_m3}, Fallo: {tiempo_fallo_total_m3}, Espera: {tiempo_espera_total_m3}")
-
-        # Graficar
-        if len(tiempos['Tiempo']) > 1:
-            fig_inventarios = go.Figure()
-            fig_inventarios.add_trace(go.Scatter(x=inventarios['Tiempo'], y=inventarios['Inventario MP'], mode='lines', name='Inventario MP'))
-            fig_inventarios.add_trace(go.Scatter(x=inventarios['Tiempo'], y=inventarios['Inventario en Proceso M2'], mode='lines', name='Inventario en Proceso M2'))
-            fig_inventarios.add_trace(go.Scatter(x=inventarios['Tiempo'], y=inventarios['Inventario en Proceso M3'], mode='lines', name='Inventario en Proceso M3'))
-            fig_inventarios.add_trace(go.Scatter(x=inventarios['Tiempo'], y=inventarios['Inventario PT'], mode='lines', name='Inventario PT'))
-            st.plotly_chart(fig_inventarios, use_container_width=True)
-
-            fig_tiempos = go.Figure()
-            fig_tiempos.add_trace(go.Scatter(x=tiempos['Tiempo'], y=tiempos['Tiempos de Máquina 1'], mode='lines', name='Tiempos Máquina 1'))
-            fig_tiempos.add_trace(go.Scatter(x=tiempos['Tiempo'], y=tiempos['Tiempos de Máquina 2'], mode='lines', name='Tiempos Máquina 2'))
-            fig_tiempos.add_trace(go.Scatter(x=tiempos['Tiempo'], y=tiempos['Tiempos de Máquina 3'], mode='lines', name='Tiempos Máquina 3'))
-            st.plotly_chart(fig_tiempos, use_container_width=True)
-
-            fig_lead_time = go.Figure()
-            fig_lead_time.add_trace(go.Scatter(x=lead_times['Tiempo'], y=lead_times['Lead Time'], mode='lines', name='Lead Time'))
-            fig_lead_time.add_trace(go.Scatter(x=lead_times['Tiempo'], y=lead_times['Tiempo Requerido'], mode='lines', name='Tiempo Requerido', line=dict(dash='dash')))
-            st.plotly_chart(fig_lead_time, use_container_width=True)
         
+        # Graficar resultados
+        fig_inventarios = go.Figure()
+        fig_inventarios.add_trace(go.Bar(x=inventarios['Tiempo'], y=inventarios['Inventario MP'], name='Inventario MP'))
+        fig_inventarios.add_trace(go.Bar(x=inventarios['Tiempo'], y=inventarios['Inventario en Proceso M2'], name='Inventario en Proceso M2'))
+        fig_inventarios.add_trace(go.Bar(x=inventarios['Tiempo'], y=inventarios['Inventario en Proceso M3'], name='Inventario en Proceso M3'))
+        fig_inventarios.add_trace(go.Bar(x=inventarios['Tiempo'], y=inventarios['Inventario PT'], name='Inventario PT'))
+        st.plotly_chart(fig_inventarios, use_container_width=True)
+
+        fig_tiempos = go.Figure()
+        fig_tiempos.add_trace(go.Bar(x=tiempos['Tiempo'], y=tiempos['Tiempo Máquina 1'], name='Tiempo Máquina 1'))
+        fig_tiempos.add_trace(go.Bar(x=tiempos['Tiempo'], y=tiempos['Tiempo Máquina 2'], name='Tiempo Máquina 2'))
+        fig_tiempos.add_trace(go.Bar(x=tiempos['Tiempo'], y=tiempos['Tiempo Máquina 3'], name='Tiempo Máquina 3'))
+        st.plotly_chart(fig_tiempos, use_container_width=True)
+
+        fig_tiempos_detalle = go.Figure()
+        fig_tiempos_detalle.add_trace(go.Bar(x=tiempos_detalle['Tiempo'], y=tiempos_detalle['Ciclo Máquina 1'], name='Ciclo Máquina 1'))
+        fig_tiempos_detalle.add_trace(go.Bar(x=tiempos_detalle['Tiempo'], y=tiempos_detalle['Ajuste Máquina 1'], name='Ajuste Máquina 1'))
+        fig_tiempos_detalle.add_trace(go.Bar(x=tiempos_detalle['Tiempo'], y=tiempos_detalle['Fallo Máquina 1'], name='Fallo Máquina 1'))
+        fig_tiempos_detalle.add_trace(go.Bar(x=tiempos_detalle['Tiempo'], y=tiempos_detalle['Espera Máquina 1'], name='Espera Máquina 1'))
+        fig_tiempos_detalle.add_trace(go.Bar(x=tiempos_detalle['Tiempo'], y=tiempos_detalle['Ciclo Máquina 2'], name='Ciclo Máquina 2'))
+        fig_tiempos_detalle.add_trace(go.Bar(x=tiempos_detalle['Tiempo'], y=tiempos_detalle['Ajuste Máquina 2'], name='Ajuste Máquina 2'))
+        fig_tiempos_detalle.add_trace(go.Bar(x=tiempos_detalle['Tiempo'], y=tiempos_detalle['Fallo Máquina 2'], name='Fallo Máquina 2'))
+        fig_tiempos_detalle.add_trace(go.Bar(x=tiempos_detalle['Tiempo'], y=tiempos_detalle['Espera Máquina 2'], name='Espera Máquina 2'))
+        fig_tiempos_detalle.add_trace(go.Bar(x=tiempos_detalle['Tiempo'], y=tiempos_detalle['Ciclo Máquina 3'], name='Ciclo Máquina 3'))
+        fig_tiempos_detalle.add_trace(go.Bar(x=tiempos_detalle['Tiempo'], y=tiempos_detalle['Ajuste Máquina 3'], name='Ajuste Máquina 3'))
+        fig_tiempos_detalle.add_trace(go.Bar(x=tiempos_detalle['Tiempo'], y=tiempos_detalle['Fallo Máquina 3'], name='Fallo Máquina 3'))
+        fig_tiempos_detalle.add_trace(go.Bar(x=tiempos_detalle['Tiempo'], y=tiempos_detalle['Espera Máquina 3'], name='Espera Máquina 3'))
+        st.plotly_chart(fig_tiempos_detalle, use_container_width=True)
+
         # Verificación de tiempo
         elapsed_time = time.time() - start_time
         if elapsed_time > tiempo_requerido_cliente:
@@ -146,4 +168,3 @@ if st.button("Iniciar Simulación"):
             break
         
     st.write("Simulación completada.")
-
