@@ -117,7 +117,7 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
         total_setup_time = sum(setup_time_total)
         total_fail_time = sum(fail_time_total)
         total_wait_time = sum(wait_times)
-        lead_time = total_operation_time + total_setup_time + total_fail_time + total_wait_time
+        lead_time = total_operation_time + total_setup_time + total_fail_time
 
         with lead_time_chart.container():
             fig = go.Figure()
@@ -185,4 +185,4 @@ if st.sidebar.button("Iniciar Simulación"):
     st.write(f"Conclusión: {conclusion}")
 
     # Limpiar los datos históricos después de mostrar los resultados
-    st.session_state['historical_data'] = []
+    #st.session_state['historical_data'] = []
