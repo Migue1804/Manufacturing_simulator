@@ -9,9 +9,6 @@ if 'historical_data' not in st.session_state:
 
 # Función para calcular la probabilidad de fallas basada en la confiabilidad
 def calculate_fail_prob(reliability):
-    # La probabilidad de fallas aumenta a medida que la confiabilidad disminuye
-    # La probabilidad máxima de fallas es 1 cuando la confiabilidad es 0
-    # La probabilidad mínima de fallas es 0 cuando la confiabilidad es 100
     return (1 - reliability / 100) * 0.5  # Ajusta el factor 0.5 según sea necesario
 
 # Función para simular el proceso
@@ -60,7 +57,7 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
                 continue
 
             # Procesar el lote si hay suficiente inventario de entrada
-            if inventories[i] >= lot_size:
+            if i == 0 or inventories[i] >= lot_size:
                 # Tiempo de procesamiento
                 processing_time = machine_speeds[i] * lot_size
                 operation_times[i] += processing_time
@@ -114,7 +111,6 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
             fig = go.Figure()
             fig.add_trace(go.Bar(x=['Operación', 'Alistamiento', 'Fallas', 'Esperas'], y=[total_operation_time, total_setup_time, total_fail_time, total_wait_time], name='Tiempos'))
             fig.add_trace(go.Bar(x=['Lead Time'], y=[lead_time], name='Lead Time', marker_color='purple'))
-            fig.update_layout(title='Lead Time Total del Proceso', xaxis_title='Tipo de Tiempo', yaxis_title='Tiempo (segundos)')
             st.plotly_chart(fig, use_container_width=True)
 
         # Calcular tiempo requerido por el cliente y mostrar en un gráfico
@@ -122,7 +118,6 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
             fig = go.Figure()
             fig.add_trace(go.Bar(x=['Tiempo Requerido por Cliente'], y=[time_limit], name='Tiempo Requerido', marker_color='cyan'))
             fig.add_trace(go.Bar(x=['Lead Time Total'], y=[lead_time], name='Lead Time', marker_color='magenta'))
-            fig.update_layout(title='Comparación entre Lead Time y Tiempo Requerido por Cliente', xaxis_title='Tipo de Tiempo', yaxis_title='Tiempo (segundos)')
             st.plotly_chart(fig, use_container_width=True)
 
         # Pausar un segundo antes de la próxima actualización
