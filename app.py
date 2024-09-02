@@ -2,7 +2,7 @@ import streamlit as st
 import time
 import numpy as np
 import plotly.graph_objects as go
-
+from PIL import Image
 # Inicializar el estado de la sesión para almacenar los datos de cada segundo
 if 'historical_data' not in st.session_state:
     st.session_state['historical_data'] = []
@@ -151,6 +151,8 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
     return processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times, lead_time, conclusion
 
 # Interfaz de usuario
+# Display the image above the title
+st.image('proceso.jpg', use_column_width=True)
 st.title("Simulación de Proceso de Producción en Tiempo Real")
 
 # Parámetros de entrada
