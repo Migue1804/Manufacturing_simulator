@@ -116,7 +116,7 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
         total_setup_time = sum(setup_time_total)
         total_fail_time = sum(fail_time_total)
         total_wait_time = sum(wait_times)  # Esto ahora refleja los tiempos acumulados hasta el momento
-        lead_time = total_operation_time + total_setup_time + total_fail_time
+        lead_time = total_operation_time + total_setup_time + total_fail_time + total_wait_time  # Incluir tiempos de espera
 
         with lead_time_chart.container():
             fig = go.Figure()
@@ -143,45 +143,23 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
         st.plotly_chart(fig, use_container_width=True)
 
     total_time = time.time() - start_time
-    if processed_units >= demand and lead_time <= time_limit:
-        conclusion = "¡Requerimiento cumplido!"
+    if processed_units >= demand:
+        st.write(f"Producción completada con éxito. Tiempo total: {total_time:.2f} segundos")
     else:
-        conclusion = "No se alcanzó a cumplir el requerimiento."
+        st.write(f"Producción incompleta. Tiempo total: {total_time:.2f} segundos")
 
-    return processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times, lead_time, conclusion
+# Configuración de Streamlit
+st.title("Simulación de Proceso de Producción")
 
-# Interfaz de usuario
-st.title("Simulación de Proceso de Producción en Tiempo Real")
+num_machines = 3
+machine_speeds = st.slider("Velocidades de las Máquinas", 0.1, 10.0, [1.0] * num_machines, 0.1)
+lot_size = st.slider("Tamaño del Lote", 1, 10, 5)
+setup_times = st.slider("Tiempos de Alistamiento (segundos)", 0.0, 10.0, [1.0] * num_machines, 0.1)
+demand = st.slider("Demanda Requerida", 1, 100, 20)
+time_limit = st.slider("Tiempo Límite de Simulación (segundos)", 60, 3600, 600)
+initial_inventory = st.slider("Inventario Inicial de Materia Prima", 1, 100, 50)
+reliability = st.slider("Confiabilidad del Equipo (%)", 0, 100, 100)
 
-# Parámetros de entrada
-st.sidebar.header("Configuración del Proceso")
-machine_speeds = [
-    st.sidebar.slider("Velocidad de Procesamiento de la Máquina 1 (segundos por unidad)", 1, 20, 5 ),
-    st.sidebar.slider("Velocidad de Procesamiento de la Máquina 2 (segundos por unidad)", 1, 20, 10 ),
-    st.sidebar.slider("Velocidad de Procesamiento de la Máquina 3 (segundos por unidad)", 1, 20, 7 )
-]
-lot_size = st.sidebar.slider("Tamaño del Lote (unidades)", 1, 10, 6)
-setup_times = [
-    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 1 (segundos)", 0, 10, 3 ),
-    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 2 (segundos)", 0, 10, 2 ),
-    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 3 (segundos)", 0, 10, 1 )
-]
-demand = st.sidebar.slider("Demanda Requerida (unidades)", 0, 50, 10)
-time_limit = st.sidebar.slider("Tiempo Máximo de Simulación (segundos)", 60, 500, 300)
-initial_inventory = st.sidebar.slider("Inventario Inicial de Materia Prima (unidades)", 0, 50, 30)
-reliability = st.sidebar.slider("OEE (%)", 0, 100, 85)
-
-if st.sidebar.button("Iniciar Simulación"):
-    processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times, lead_time, conclusion = simulate_process(
-        machine_speeds, lot_size, setup_times, demand, time_limit, initial_inventory, reliability)
-    st.write(f"Unidades Procesadas: {processed_units}")
-    st.write(f"Inventario Final: {inventories}")
-    st.write(f"Tiempos de Operación: {operation_times}")
-    st.write(f"Tiempos de Alistamiento Total: {setup_time_total}")
-    st.write(f"Tiempos de Fallas Total: {fail_time_total}")
-    st.write(f"Tiempos de Espera: {wait_times}")
-    st.write(f"Lead Time Total: {lead_time:.2f} segundos")
-    st.write(f"Conclusión: {conclusion}")
-
-    # Limpiar los datos históricos después de mostrar los resultados
-    #st.session_state['historical_data'] = []
+# Botón para iniciar la simulación
+if st.button("Iniciar Simulación"):
+    simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, initial_inventory, reliability)
