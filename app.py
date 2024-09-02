@@ -56,61 +56,29 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
                 time.sleep(fail_duration)
                 continue
 
-            # Si es la primera máquina, no necesita esperar
-            if i == 0:
-                # Procesar el lote si hay suficiente inventario de entrada
-                if inventories[i] >= lot_size:
-                    # Tiempo de procesamiento
-                    processing_time = machine_speeds[i] * lot_size
-                    operation_times[i] += processing_time
-                    inventories[i] -= lot_size  # Restar el lote procesado del inventario de entrada
-                    st.write(f"Machine {i+1} processing for {processing_time:.2f} seconds")
-                    time.sleep(processing_time)  # Simular el tiempo de procesamiento
+            # Procesar el lote si hay suficiente inventario de entrada
+            if i == 0 or inventories[i] >= lot_size:
+                # Tiempo de procesamiento
+                processing_time = machine_speeds[i] * lot_size
+                operation_times[i] += processing_time
+                inventories[i] -= lot_size  # Restar el lote procesado del inventario de entrada
+                st.write(f"Machine {i+1} processing for {processing_time:.2f} seconds")
+                time.sleep(processing_time)  # Simular el tiempo de procesamiento
 
-                    # Agregar el lote procesado al inventario de salida
+                # Agregar el lote procesado al inventario de salida
+                if i + 1 < len(inventories):
                     inventories[i + 1] += lot_size  # Transferir el lote procesado a la siguiente etapa
 
-                    # Simular tiempo de alistamiento específico para cada máquina
-                    if i < len(setup_times):
-                        setup_time = setup_times[i]
-                        time.sleep(setup_time)
-                        setup_time_total[i] += setup_time
-                        st.write(f"Machine {i+1} setup time for {setup_time:.2f} seconds")
-                else:
-                    # Si no hay suficiente inventario, incrementar el tiempo de espera
-                    wait_times[i] += 1
-                    st.write(f"Machine {i+1} waiting due to insufficient inventory")
-
+                # Simular tiempo de alistamiento específico para cada máquina
+                if i < len(setup_times):
+                    setup_time = setup_times[i]
+                    time.sleep(setup_time)
+                    setup_time_total[i] += setup_time
+                    st.write(f"Machine {i+1} setup time for {setup_time:.2f} seconds")
             else:
-                # Esperar a que la máquina anterior haya procesado el lote
-                while inventories[i-1] < lot_size:
-                    wait_times[i] += 1
-                    st.write(f"Machine {i+1} waiting for previous machine to complete processing")
-                    time.sleep(1)  # Esperar un segundo antes de revisar nuevamente
-
-                # Procesar el lote si hay suficiente inventario de entrada
-                if inventories[i] >= lot_size:
-                    # Tiempo de procesamiento
-                    processing_time = machine_speeds[i] * lot_size
-                    operation_times[i] += processing_time
-                    inventories[i] -= lot_size  # Restar el lote procesado del inventario de entrada
-                    st.write(f"Machine {i+1} processing for {processing_time:.2f} seconds")
-                    time.sleep(processing_time)  # Simular el tiempo de procesamiento
-
-                    # Agregar el lote procesado al inventario de salida
-                    if i + 1 < len(inventories):
-                        inventories[i + 1] += lot_size  # Transferir el lote procesado a la siguiente etapa
-
-                    # Simular tiempo de alistamiento específico para cada máquina
-                    if i < len(setup_times):
-                        setup_time = setup_times[i]
-                        time.sleep(setup_time)
-                        setup_time_total[i] += setup_time
-                        st.write(f"Machine {i+1} setup time for {setup_time:.2f} seconds")
-                else:
-                    # Si no hay suficiente inventario, incrementar el tiempo de espera
-                    wait_times[i] += 1
-                    st.write(f"Machine {i+1} waiting due to insufficient inventory")
+                # Si no hay suficiente inventario, incrementar el tiempo de espera
+                wait_times[i] += 1
+                st.write(f"Machine {i+1} waiting due to insufficient inventory")
 
         # Verificar si ya se cumplió la demanda
         processed_units = inventories[-1]  # El inventario de productos terminados es la última posición
@@ -160,22 +128,30 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
     # Asegurarse de que se grafique el inventario final de productos terminados
     with inventory_chart.container():
         fig = go.Figure()
-        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)] + ['Producto Terminado'], y=inventories, name='Inventario Final'))
+        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)] + ['Producto Terminado'], y=inventories, name='Inventario'))
         fig.add_trace(go.Scatter(x=['Producto Terminado'], y=[demand], mode='lines+markers', name='Demanda Requerida', line=dict(color='red', width=2)))
-        fig.update_layout(title='Inventarios Finales por Máquina', xaxis_title='Máquinas/Producto Terminado', yaxis_title='Inventario')
+        fig.update_layout(title='Inventarios por Máquina', xaxis_title='Máquinas/Producto Terminado', yaxis_title='Inventario')
         st.plotly_chart(fig, use_container_width=True)
 
-    return processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times, lead_time, "Simulación completa"
+    total_time = time.time() - start_time
+    if processed_units >= demand and lead_time <= time_limit:
+        conclusion = "¡Requerimiento cumplido!"
+    else:
+        conclusion = "No se alcanzó a cumplir el requerimiento."
 
-# Interfaz de usuario con Streamlit
-st.title("Simulación de Proceso de Producción")
+    return processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times, lead_time, conclusion
 
+# Interfaz de usuario
+st.title("Simulación de Proceso de Producción en Tiempo Real")
+
+# Parámetros de entrada
+st.sidebar.header("Configuración del Proceso")
 machine_speeds = [
-    st.sidebar.slider("Velocidad de Máquina 1 (segundos por unidad)", 0.1, 5.0, 1.0),
-    st.sidebar.slider("Velocidad de Máquina 2 (segundos por unidad)", 0.1, 5.0, 1.0),
-    st.sidebar.slider("Velocidad de Máquina 3 (segundos por unidad)", 0.1, 5.0, 1.0)
+    st.sidebar.slider("Velocidad de la Máquina 1 (segundos por unidad)", 1, 20, 5),
+    st.sidebar.slider("Velocidad de la Máquina 2 (segundos por unidad)", 1, 20, 10),
+    st.sidebar.slider("Velocidad de la Máquina 3 (segundos por unidad)", 1, 20, 7)
 ]
-lot_size = st.sidebar.slider("Tamaño del Lote", 1, 20, 5)
+lot_size = st.sidebar.slider("Tamaño del lote", 1, 10, 6)
 setup_times = [
     st.sidebar.slider("Tiempo de alistamiento de Máquina 1 (segundos)", 0, 5, 1),
     st.sidebar.slider("Tiempo de alistamiento de Máquina 2 (segundos)", 0, 5, 1),
