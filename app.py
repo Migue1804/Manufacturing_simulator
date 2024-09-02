@@ -161,9 +161,9 @@ setup_times = [
     st.sidebar.slider("Tiempo de alistamiento de Máquina 3 (segundos)", 0, 5, 1)
 ]
 demand = st.sidebar.slider("Cantidad requerida por el cliente", 1, 50, 20)
-time_limit = st.sidebar.slider("Tiempo límite (segundos)", 1, 600, 300)
+time_limit = st.sidebar.slider("Tiempo límite (segundos)", 1, 600, 350)
 initial_inventory = st.sidebar.slider("Inventario inicial de materia prima", 1, 50, 20)
-reliability = st.sidebar.slider("OEE del equipo (%)", 0, 100, 100)
+reliability = st.sidebar.slider("OEE del equipo (%)", 0, 100, 85)
 
 start_simulation = st.sidebar.button("Iniciar Simulación")
 
