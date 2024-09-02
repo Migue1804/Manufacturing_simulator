@@ -76,7 +76,9 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
                     setup_time_total[i] += setup_time
                     st.write(f"Machine {i+1} setup time for {setup_time:.2f} seconds")
             else:
-                wait_times[i] += 1  # Incrementar tiempo de espera si no hay suficiente inventario
+                # Si no hay suficiente inventario, incrementar el tiempo de espera
+                wait_times[i] += 1
+                st.write(f"Machine {i+1} waiting due to insufficient inventory")
 
         # Verificar si ya se cumplió la demanda
         processed_units = inventories[-1]  # El inventario de productos terminados es la última posición
