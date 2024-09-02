@@ -11,7 +11,6 @@ if 'historical_data' not in st.session_state:
 def calculate_fail_prob(reliability):
     return (1 - reliability / 100) * 0.5  # Ajusta el factor 0.5 según sea necesario
 
-# Función para simular el proceso
 def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, initial_inventory, reliability):
     num_machines = len(machine_speeds)
     processed_units = 0
@@ -116,7 +115,7 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
         total_operation_time = sum(operation_times)
         total_setup_time = sum(setup_time_total)
         total_fail_time = sum(fail_time_total)
-        total_wait_time = sum(wait_times)
+        total_wait_time = sum(wait_times)  # Esto ahora refleja los tiempos acumulados hasta el momento
         lead_time = total_operation_time + total_setup_time + total_fail_time
 
         with lead_time_chart.container():
