@@ -157,15 +157,15 @@ st.title("Simulación de Proceso de Producción en Tiempo Real")
 # Parámetros de entrada
 st.sidebar.header("Configuración del Proceso")
 machine_speeds = [
-    st.sidebar.slider("Velocidad de Procesamiento de la Máquina 1 (segundos por unidad)", 1, 20, 5 , 0.1),
-    st.sidebar.slider("Velocidad de Procesamiento de la Máquina 2 (segundos por unidad)", 1, 20, 10 , 0.1),
-    st.sidebar.slider("Velocidad de Procesamiento de la Máquina 3 (segundos por unidad)", 1, 20, 7 , 0.1)
+    st.sidebar.slider("Velocidad de Procesamiento de la Máquina 1 (segundos por unidad)", 1, 20, 5 ),
+    st.sidebar.slider("Velocidad de Procesamiento de la Máquina 2 (segundos por unidad)", 1, 20, 10 ),
+    st.sidebar.slider("Velocidad de Procesamiento de la Máquina 3 (segundos por unidad)", 1, 20, 7 )
 ]
 lot_size = st.sidebar.slider("Tamaño del Lote (unidades)", 1, 10, 6)
 setup_times = [
-    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 1 (segundos)", 0, 10, 3 , 0.1),
-    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 2 (segundos)", 0, 10, 2 , 0.1),
-    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 3 (segundos)", 0, 10, 1 , 0.1)
+    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 1 (segundos)", 0, 10, 3 ),
+    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 2 (segundos)", 0, 10, 2 ),
+    st.sidebar.slider("Tiempo de Alistamiento de la Máquina 3 (segundos)", 0, 10, 1 )
 ]
 demand = st.sidebar.slider("Demanda Requerida (unidades)", 10, 100, 50)
 time_limit = st.sidebar.slider("Tiempo Máximo de Simulación (segundos)", 60, 500, 300)
