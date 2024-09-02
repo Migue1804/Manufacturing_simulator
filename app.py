@@ -26,14 +26,12 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
     # Crear contenedores para gráficos
     inventory_chart = st.empty()
     times_chart = st.empty()
-    lead_time_chart = st.empty()
-    customer_time_chart = st.empty()
 
     # Inicializar gráficos vacíos
     with inventory_chart.container():
         fig = go.Figure()
-        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)] + ['Producto Terminado'], y=inventories, name='Inventario'))
-        fig.update_layout(title='Inventarios por Máquina', xaxis_title='Máquinas/Producto Terminado', yaxis_title='Inventario')
+        fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines+1)], y=inventories, name='Inventario'))
+        fig.update_layout(title='Inventarios por Máquina', xaxis_title='Máquinas', yaxis_title='Inventario')
         st.plotly_chart(fig, use_container_width=True)
 
     with times_chart.container():
@@ -95,8 +93,8 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
         # Actualizar gráficos en tiempo real
         with inventory_chart.container():
             fig = go.Figure()
-            fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines)] + ['Producto Terminado'], y=inventories, name='Inventario'))
-            fig.update_layout(title='Inventarios por Máquina', xaxis_title='Máquinas/Producto Terminado', yaxis_title='Inventario')
+            fig.add_trace(go.Bar(x=[f'Máquina {i+1}' for i in range(num_machines+1)], y=inventories, name='Inventario'))
+            fig.update_layout(title='Inventarios por Máquina', xaxis_title='Máquinas', yaxis_title='Inventario')
             st.plotly_chart(fig, use_container_width=True)
 
         with times_chart.container():
@@ -108,38 +106,11 @@ def simulate_process(machine_speeds, lot_size, setup_times, demand, time_limit, 
             fig.update_layout(title='Tiempos Acumulados por Máquina', xaxis_title='Máquinas', yaxis_title='Tiempo (segundos)', barmode='stack')
             st.plotly_chart(fig, use_container_width=True)
 
-        # Calcular el Lead Time y mostrar en un gráfico
-        total_operation_time = sum(operation_times)
-        total_setup_time = sum(setup_time_total)
-        total_fail_time = sum(fail_time_total)
-        total_wait_time = sum(wait_times)
-        lead_time = total_operation_time + total_setup_time + total_fail_time + total_wait_time
-
-        with lead_time_chart.container():
-            fig = go.Figure()
-            fig.add_trace(go.Bar(x=['Operación', 'Alistamiento', 'Fallas', 'Esperas'], y=[total_operation_time, total_setup_time, total_fail_time, total_wait_time], name='Tiempos'))
-            fig.add_trace(go.Bar(x=['Lead Time'], y=[lead_time], name='Lead Time', marker_color='purple'))
-            fig.update_layout(title='Lead Time Total del Proceso', xaxis_title='Tipo de Tiempo', yaxis_title='Tiempo (segundos)')
-            st.plotly_chart(fig, use_container_width=True)
-
-        # Calcular tiempo requerido por el cliente y mostrar en un gráfico
-        with customer_time_chart.container():
-            fig = go.Figure()
-            fig.add_trace(go.Bar(x=['Tiempo Requerido por Cliente'], y=[time_limit], name='Tiempo Requerido', marker_color='cyan'))
-            fig.add_trace(go.Bar(x=['Lead Time Total'], y=[lead_time], name='Lead Time', marker_color='magenta'))
-            fig.update_layout(title='Comparación entre Lead Time y Tiempo Requerido por Cliente', xaxis_title='Tipo de Tiempo', yaxis_title='Tiempo (segundos)')
-            st.plotly_chart(fig, use_container_width=True)
-
         # Pausar un segundo antes de la próxima actualización
         time.sleep(1)
 
     total_time = time.time() - start_time
-    if lead_time <= time_limit:
-        conclusion = "¡Requerimiento cumplido!"
-    else:
-        conclusion = "No se alcanzó a cumplir el requerimiento."
-
-    return processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times, lead_time, conclusion
+    return processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times
 
 # Interfaz de usuario
 st.title("Simulación de Proceso de Producción en Tiempo Real")
@@ -166,7 +137,7 @@ start_simulation = st.sidebar.button("Iniciar Simulación")
 if start_simulation:
     st.write("Iniciando simulación...")
     st.write("Tiempo límite:", time_limit, "segundos")
-    processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times, lead_time, conclusion = simulate_process(
+    processed_units, inventories, operation_times, setup_time_total, fail_time_total, wait_times = simulate_process(
         machine_speeds, lot_size, setup_times, demand, time_limit, initial_inventory)
     
     st.write(f"Unidades procesadas: {processed_units}")
@@ -175,5 +146,3 @@ if start_simulation:
     st.write(f"Tiempos de alistamiento total por máquina: {setup_time_total}")
     st.write(f"Tiempos de fallos total por máquina: {fail_time_total}")
     st.write(f"Tiempos de espera: {wait_times}")
-    st.write(f"Lead Time Total: {lead_time:.2f} segundos")
-    st.write(f"Conclusión: {conclusion}")
