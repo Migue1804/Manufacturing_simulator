@@ -155,13 +155,13 @@ st.title("Simulación de Proceso de Producción")
 st.sidebar.header("Configuración de Simulación")
 
 # Parámetros ajustables
-machine_speeds = [st.sidebar.slider(f"Velocidad de Máquina {i+1} (segundos por unidad)", 0.1, 10.0, 1.0, 0.1) for i in range(3)]
-lot_size = st.sidebar.slider("Tamaño del Lote", 1, 100, 10, 1)
-setup_times = [st.sidebar.slider(f"Tiempo de Alistamiento Máquina {i+1} (segundos)", 0, 60, 5, 1) for i in range(3)]
-demand = st.sidebar.slider("Demanda del Cliente (unidades)", 1, 1000, 100, 10)
-time_limit = st.sidebar.slider("Tiempo Limite de Simulación (segundos)", 1, 300, 60, 1)
-initial_inventory = st.sidebar.slider("Inventario Inicial de Materia Prima", 0, 1000, 100, 10)
-reliability = st.sidebar.slider("Confiabilidad del Equipo (%)", 0, 100, 95, 1)
+machine_speeds = [st.sidebar.slider(f"Velocidad de Máquina {i+1} (segundos por unidad)", 0.1, 10.0, 5.0, 0.1) for i in range(3)]
+lot_size = st.sidebar.slider("Tamaño del Lote", 1, 10, 6, 1)
+setup_times = [st.sidebar.slider(f"Tiempo de Alistamiento Máquina {i+1} (segundos)", 0.1, 10.0, 5.0, 0.1) for i in range(3)]
+demand = st.sidebar.slider("Demanda del Cliente (unidades)", 1, 50, 10, 10)
+time_limit = st.sidebar.slider("Tiempo Limite de Simulación (segundos)", 1, 500, 60, 1)
+initial_inventory = st.sidebar.slider("Inventario Inicial de Materia Prima", 0, 50, 30, 10)
+reliability = st.sidebar.slider("Confiabilidad del Equipo (%)", 0, 100, 85, 1)
 
 # Botón para iniciar la simulación
 if st.sidebar.button("Iniciar Simulación"):
